@@ -1,17 +1,19 @@
 const API_BASE =
-  process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '') ||
-  'http://localhost:7878/api';
+  process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, "") ||
+  "http://localhost:7878/api";
+
+//https://n3h703b4-7878.euw.devtunnels.ms/api
 
 type Options = RequestInit & { json?: unknown };
 
 async function request<T>(path: string, options: Options = {}): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {})
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
     },
     ...options,
-    body: options.json ? JSON.stringify(options.json) : options.body
+    body: options.json ? JSON.stringify(options.json) : options.body,
   });
 
   if (!res.ok) {
@@ -24,5 +26,6 @@ async function request<T>(path: string, options: Options = {}): Promise<T> {
 export const api = {
   baseUrl: API_BASE,
   get: request,
-  post: <T>(path: string, json: unknown) => request<T>(path, { method: 'POST', json })
+  post: <T>(path: string, json: unknown) =>
+    request<T>(path, { method: "POST", json }),
 };
