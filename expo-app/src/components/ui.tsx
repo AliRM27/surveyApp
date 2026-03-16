@@ -51,12 +51,17 @@ export function PrimaryButton({ label, onPress, fullWidth }: ButtonProps) {
       style={({ pressed }) => [
         styles.buttonBase,
         styles.buttonPrimary,
-        { backgroundColor: theme.accent, shadowColor: theme.accent },
+        {
+          backgroundColor: theme.backgroundElement,
+          shadowColor: "#000",
+        },
         fullWidth && { width: "100%" },
         pressed && styles.buttonPressed,
       ]}
     >
-      <ThemedText style={styles.buttonPrimaryText}>{label}</ThemedText>
+      <ThemedText style={[styles.buttonPrimaryText, { color: theme.text }]}>
+        {label}
+      </ThemedText>
     </Pressable>
   );
 }
@@ -187,7 +192,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   buttonPrimary: {
-    backgroundColor: "#2563eb",
+    backgroundColor: "#ffffff",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   buttonSecondary: {
     backgroundColor: "transparent",

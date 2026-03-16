@@ -1,19 +1,21 @@
-import { Schema, model, Document, Types } from 'mongoose';
-import { UserDocument } from './user.model';
+import { Schema, model, Document, Types } from "mongoose";
+import { UserDocument } from "./user.model";
 
 export interface GroupDocument extends Document {
   name: string;
   teacher: Types.ObjectId | UserDocument;
   members: Types.ObjectId[];
+  color: string;
 }
 
 const groupSchema = new Schema<GroupDocument>(
   {
     name: { type: String, required: true },
-    teacher: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    members: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+    teacher: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    members: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    color: { type: String, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const GroupModel = model<GroupDocument>('Group', groupSchema);
+export const GroupModel = model<GroupDocument>("Group", groupSchema);

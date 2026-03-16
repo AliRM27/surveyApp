@@ -6,6 +6,7 @@ export interface UserDocument extends Document {
   name: string;
   email: string;
   role: UserRole;
+  passwordHash?: string;
 }
 
 const userSchema = new Schema<UserDocument>(
@@ -16,7 +17,8 @@ const userSchema = new Schema<UserDocument>(
       type: String,
       enum: ['teacher', 'student'],
       required: true
-    }
+    },
+    passwordHash: { type: String, select: false }
   },
   { timestamps: true }
 );
