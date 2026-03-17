@@ -9,22 +9,12 @@ import React, {
 } from "react";
 
 import { api, setAuthToken } from "@/utils/api";
+import { User } from "@/types/user";
 
-type Role = "teacher" | "student";
-
-export type AuthUser = {
-  _id: string;
-  name: string;
-  email: string;
-  role: Role;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-type AuthResponse = { token: string; user: AuthUser };
+type AuthResponse = { token: string; user: User };
 
 type AuthContextValue = {
-  user?: AuthUser;
+  user?: User;
   token?: string;
   loading: boolean;
   hydrated: boolean;
@@ -34,7 +24,7 @@ type AuthContextValue = {
     name: string;
     email: string;
     password: string;
-    role: Role;
+    role: User["role"];
   }) => Promise<void>;
   logout: () => void;
 };
@@ -42,12 +32,12 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser>();
+  const [user, setUser] = useState<User>();
   const [token, setToken] = useState<string>();
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
-  const setSession = useCallback((nextToken?: string, nextUser?: AuthUser) => {
+  const setSession = useCallback((nextToken?: string, nextUser?: User) => {
     setToken(nextToken);
     setUser(nextUser);
     setAuthToken(nextToken ?? null);
@@ -69,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           AsyncStorage.getItem("auth_user"),
         ]);
         if (!cancelled && savedToken && savedUser) {
-          const parsedUser = JSON.parse(savedUser) as AuthUser;
+          const parsedUser = JSON.parse(savedUser) as User;
           setSession(savedToken, parsedUser);
         }
       } finally {
@@ -106,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       name: string;
       email: string;
       password: string;
-      role: Role;
+      role: User["role"];
     }) => {
       setLoading(true);
       try {

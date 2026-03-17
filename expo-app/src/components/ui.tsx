@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -18,6 +18,8 @@ type ButtonProps = {
   label: string;
   onPress: () => void | Promise<void>;
   fullWidth?: boolean;
+  disabled?: boolean;
+  isActive?: boolean;
 };
 
 export function Surface({
@@ -43,40 +45,58 @@ export function Surface({
   );
 }
 
-export function PrimaryButton({ label, onPress, fullWidth }: ButtonProps) {
+export function PrimaryButton({
+  label,
+  onPress,
+  fullWidth,
+  disabled,
+  isActive = true,
+}: ButtonProps) {
   const theme = useTheme();
+  const isDisabled = disabled ?? !isActive;
   return (
     <Pressable
       onPress={onPress}
+      disabled={isDisabled}
       style={({ pressed }) => [
         styles.buttonBase,
         styles.buttonPrimary,
         {
-          backgroundColor: theme.backgroundElement,
+          backgroundColor: theme.text,
           shadowColor: "#000",
         },
         fullWidth && { width: "100%" },
-        pressed && styles.buttonPressed,
+        isDisabled && { opacity: 0.7 },
+        pressed && !isDisabled && styles.buttonPressed,
       ]}
     >
-      <ThemedText style={[styles.buttonPrimaryText, { color: theme.text }]}>
+      <ThemedText
+        style={[styles.buttonPrimaryText, { color: theme.background }]}
+      >
         {label}
       </ThemedText>
     </Pressable>
   );
 }
 
-export function SecondaryButton({ label, onPress, fullWidth }: ButtonProps) {
+export function SecondaryButton({
+  label,
+  onPress,
+  fullWidth,
+  disabled = false,
+}: ButtonProps) {
   const theme = useTheme();
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
       style={({ pressed }) => [
         styles.buttonBase,
         styles.buttonSecondary,
         { borderColor: theme.border },
         fullWidth && { width: "100%" },
-        pressed && styles.buttonPressed,
+        disabled && { opacity: 0.6 },
+        pressed && !disabled && styles.buttonPressed,
       ]}
     >
       <ThemedText style={[styles.buttonSecondaryText, { color: theme.text }]}>
@@ -91,9 +111,10 @@ export const InputField = forwardRef<
   TextInputProps & { label?: string; helper?: string }
 >(({ label, helper, style, ...props }, ref) => {
   const theme = useTheme();
+  const [isPressed, setIsPressed] = useState(false);
   return (
     <View style={{ gap: Spacing.half }}>
-      {label && <ThemedText type="small">{label}</ThemedText>}
+      {label && <ThemedText>{label}</ThemedText>}
       <ThemedView
         type="backgroundElement"
         style={[
@@ -106,7 +127,15 @@ export const InputField = forwardRef<
       >
         <TextInput
           ref={ref}
-          style={[styles.input, { color: theme.text }, style]}
+          onFocus={() => {
+            setIsPressed(true);
+          }}
+          style={[
+            styles.input,
+            isPressed && { borderColor: theme.text },
+            { color: theme.text },
+            style,
+          ]}
           placeholderTextColor={theme.textSecondary}
           {...props}
         />
@@ -179,8 +208,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   buttonBase: {
-    borderRadius: Spacing.two,
-    paddingVertical: Spacing.one + 2,
+    borderRadius: Spacing.four,
+    paddingVertical: Spacing.two + 2,
     paddingHorizontal: Spacing.three,
     alignItems: "center",
     justifyContent: "center",
@@ -192,7 +221,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   buttonPrimary: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#000000ff",
     shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 3.84,
@@ -200,7 +229,6 @@ const styles = StyleSheet.create({
   },
   buttonSecondary: {
     backgroundColor: "transparent",
-    borderWidth: StyleSheet.hairlineWidth,
   },
   buttonPressed: {
     transform: [{ translateY: 1 }],
@@ -222,6 +250,7 @@ const styles = StyleSheet.create({
   input: {
     fontSize: 16,
     fontWeight: "500",
+    height: 30,
   },
   pill: {
     paddingHorizontal: Spacing.two,

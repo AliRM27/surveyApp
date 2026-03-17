@@ -7,19 +7,30 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { InputField, PrimaryButton, SecondaryButton } from "@/components/ui";
 import { Spacing } from "@/constants/theme";
+import { useAuth } from "@/hooks/use-auth";
+import { api } from "@/utils/api";
+import { Group } from "@/types/group";
 
 export default function JoinGroupScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [groupCode, setGroupCode] = useState("");
   const [joining, setJoining] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleJoinGroup = async () => {
-    if (!groupCode.trim()) return;
+    if (!groupCode.trim() || !user) return;
     setJoining(true);
+    setError(null);
     try {
-      // TODO: connect to backend join endpoint
-      console.log("Joining group with code:", groupCode.trim());
-      router.back();
+      const payload = {
+        groupCode: groupCode.trim().toUpperCase(),
+        memberId: user._id,
+      };
+      const group = await api.post<Group>("/groups/join", payload);
+      router.replace(`/group/${group._id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not join group.");
     } finally {
       setJoining(false);
     }
@@ -29,7 +40,7 @@ export default function JoinGroupScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={{ gap: Spacing.one }}>
-          <ThemedText type="eyebrow">Join group</ThemedText>
+          {/* <ThemedText type="eyebrow">Join group</ThemedText> */}
           <ThemedText type="title">Enter group code</ThemedText>
           <ThemedText themeColor="textSecondary">
             Your teacher shares this code so you can access the group.
@@ -45,10 +56,16 @@ export default function JoinGroupScreen() {
             autoCorrect={false}
             placeholder="e.g. ABC123"
           />
+          {error && (
+            <ThemedText type="small" themeColor="accent">
+              {error}
+            </ThemedText>
+          )}
           <PrimaryButton
             label={joining ? "Joining…" : "Join group"}
             onPress={handleJoinGroup}
             fullWidth
+            disabled={!groupCode.trim() || joining}
           />
           <SecondaryButton
             label="Cancel"

@@ -3,7 +3,12 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { Stack, useRootNavigationState, useRouter, useSegments } from "expo-router";
+import {
+  Stack,
+  useRootNavigationState,
+  useRouter,
+  useSegments,
+} from "expo-router";
 import React, { useEffect } from "react";
 import { useColorScheme } from "react-native";
 
@@ -46,6 +51,10 @@ export default function RootLayout() {
           <Stack.Screen name="auth/register" options={{ headerShown: false }} />
           <Stack.Screen
             name="join-group"
+            options={{ headerShown: false, presentation: "formSheet" }}
+          />
+          <Stack.Screen
+            name="create-group"
             options={{ headerShown: false, presentation: "formSheet" }}
           />
         </Stack>

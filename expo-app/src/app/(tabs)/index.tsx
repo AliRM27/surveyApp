@@ -1,37 +1,88 @@
 import { useRouter } from "expo-router";
-import { FlatList, Pressable, RefreshControl, StyleSheet } from "react-native";
-import React, { useState } from "react";
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import React, {
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { ThemedView } from "@/components/themed-view";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Spacing } from "@/constants/theme";
 import { ThemedText } from "@/components/themed-text";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
+import { Group } from "@/types/group";
+import { api } from "@/utils/api";
 
 const index = () => {
   const { user } = useAuth();
   const router = useRouter();
   const [isPressed, setIsPressed] = useState(false);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const theme = useTheme();
+
+  const fetchGroups = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const query =
+        user.role === "teacher"
+          ? `?teacherId=${encodeURIComponent(user._id)}`
+          : `?memberId=${encodeURIComponent(user._id)}`;
+      const data = await api.get<Group[]>(`/groups${query}`);
+      setGroups(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load groups");
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchGroups();
+  }, [fetchGroups]);
+
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchGroups();
+  //   }, [fetchGroups]),
+  // );
 
   if (!user) {
     return null;
   }
-
-  const GROUP_DATA = [
-    { id: "1", title: "Group Alpha", teacher: "Herr Müller", color: "#FF6B6B" },
-    { id: "2", title: "Group Beta", teacher: "Frau Schmidt", color: "#FFD93D" },
-    { id: "3", title: "Group Gamma", teacher: "Herr Meier", color: "#6BCB77" },
-  ];
-
-  const renderItem = ({ item }: { item: (typeof GROUP_DATA)[0] }) => (
+  const renderItem = ({ item }: { item: Group }) => (
     // Using ThemedView for the card ensures the card has the right colors
-    <ThemedView style={[styles.card, { backgroundColor: item.color }]}>
-      <ThemedText type="subtitle">{item.title}</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
-        {item.teacher}
-      </ThemedText>
-    </ThemedView>
+    <Pressable onPress={() => router.push(`/group/${item._id}`)}>
+      <ThemedView
+        style={[
+          styles.card,
+          { backgroundColor: item.color || theme.backgroundElement },
+        ]}
+      >
+        <ThemedText type="subtitle">{item.name}</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          {typeof item.teacher === "string"
+            ? "Teacher"
+            : (item.teacher?.name ?? "Teacher")}
+        </ThemedText>
+      </ThemedView>
+    </Pressable>
   );
 
   return (
@@ -39,11 +90,32 @@ const index = () => {
       <SafeAreaView style={styles.safeArea}>
         <ThemedText type="title">Welcome, {user.name}</ThemedText>
         <FlatList
-          refreshControl={<RefreshControl refreshing={false} />}
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={fetchGroups} />
+          }
           showsVerticalScrollIndicator={false}
-          data={GROUP_DATA}
+          data={groups}
+          keyExtractor={(item) => item._id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            !loading ? (
+              <ThemedText themeColor="textSecondary">
+                {error ?? "No groups yet."}
+              </ThemedText>
+            ) : null
+          }
+          ListFooterComponent={
+            user.role === "teacher" ? (
+              <TouchableOpacity
+                activeOpacity={0.5}
+                style={styles.createGroupButton}
+                onPress={() => router.push("/create-group")}
+              >
+                <ThemedText type="subtitle">Create Group</ThemedText>
+              </TouchableOpacity>
+            ) : null
+          }
         />
         <Pressable
           style={[
@@ -104,5 +176,14 @@ const styles = StyleSheet.create({
     transform: [{ translateY: 1 }],
     shadowOpacity: 0.1,
     elevation: 0,
+  },
+  createGroupButton: {
+    width: "100%",
+    height: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: Spacing.three,
+    borderStyle: "dashed",
+    borderWidth: 1,
   },
 });
