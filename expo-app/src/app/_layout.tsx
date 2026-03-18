@@ -51,11 +51,45 @@ export default function RootLayout() {
           <Stack.Screen name="auth/register" options={{ headerShown: false }} />
           <Stack.Screen
             name="join-group"
-            options={{ headerShown: false, presentation: "formSheet" }}
+            options={{
+              gestureDirection: "vertical",
+              headerShown: false,
+              presentation: "formSheet",
+              animation: "slide_from_bottom",
+              sheetGrabberVisible: true,
+              sheetInitialDetentIndex: 0,
+              sheetAllowedDetents: [0.5, 1],
+              sheetExpandsWhenScrolledToEdge: true,
+              sheetElevation: 24,
+            }}
           />
           <Stack.Screen
             name="create-group"
-            options={{ headerShown: false, presentation: "formSheet" }}
+            options={{
+              gestureDirection: "vertical",
+              headerShown: false,
+              presentation: "formSheet",
+              animation: "slide_from_bottom",
+              sheetGrabberVisible: true,
+              sheetInitialDetentIndex: 0,
+              sheetAllowedDetents: [0.5, 1],
+              sheetExpandsWhenScrolledToEdge: true,
+              sheetElevation: 24,
+            }}
+          />
+          <Stack.Screen
+            name="create-survey"
+            options={{
+              gestureDirection: "vertical",
+              headerShown: false,
+              presentation: "formSheet",
+              animation: "slide_from_bottom",
+              sheetGrabberVisible: true,
+              sheetInitialDetentIndex: 0,
+              sheetAllowedDetents: [1],
+              sheetExpandsWhenScrolledToEdge: true,
+              sheetElevation: 24,
+            }}
           />
         </Stack>
       </AuthProvider>

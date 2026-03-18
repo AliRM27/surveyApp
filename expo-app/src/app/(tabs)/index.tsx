@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
 import { Group } from "@/types/group";
 import { api } from "@/utils/api";
+import { AddButton } from "@/components/ui";
 
 const index = () => {
   const { user } = useAuth();
@@ -117,7 +118,9 @@ const index = () => {
             ) : null
           }
         />
-        <Pressable
+
+        <AddButton onPress={() => router.push("/join-group")} />
+        {/* <Pressable
           style={[
             styles.button,
             { backgroundColor: theme.backgroundElement },
@@ -128,7 +131,7 @@ const index = () => {
           onPressOut={() => setIsPressed(false)}
         >
           <ThemedText type="subtitle">+</ThemedText>
-        </Pressable>
+        </Pressable> */}
       </SafeAreaView>
     </ThemedView>
   );

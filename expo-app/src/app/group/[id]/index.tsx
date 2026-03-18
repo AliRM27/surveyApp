@@ -9,6 +9,7 @@ import { Spacing } from "@/constants/theme";
 import { Group } from "@/types/group";
 import { api } from "@/utils/api";
 import { useAuth } from "@/hooks/use-auth";
+import { AddButton } from "@/components/ui";
 
 export default function GroupOverviewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -62,7 +63,7 @@ export default function GroupOverviewScreen() {
         <Pressable style={styles.back} onPress={() => router.back()}>
           <ThemedText type="link">← Back</ThemedText>
         </Pressable>
-        <View style={{ gap: Spacing.one }}>
+        <ThemedView style={[styles.card, { backgroundColor: group.color }]}>
           <ThemedText type="title">{group.name}</ThemedText>
           <ThemedText themeColor="textSecondary">
             Teacher:{" "}
@@ -75,9 +76,11 @@ export default function GroupOverviewScreen() {
               <ThemedText type="subtitle">Code: {group.groupCode} </ThemedText>
             </View>
           )}
-        </View>
+        </ThemedView>
 
-        <ThemedView
+        <AddButton onPress={() => router.push("/create-survey")} />
+
+        {/* <ThemedView
           style={[styles.card, { backgroundColor: group.color ?? "#ffffff" }]}
         >
           <ThemedText type="subtitle">About this group</ThemedText>
@@ -85,7 +88,7 @@ export default function GroupOverviewScreen() {
             Share the code with students so they can join. You can manage
             members from the Members tab.
           </ThemedText>
-        </ThemedView>
+        </ThemedView> */}
       </SafeAreaView>
     </ThemedView>
   );
@@ -107,6 +110,8 @@ const styles = StyleSheet.create({
   card: {
     padding: Spacing.three,
     borderRadius: Spacing.three,
+    borderWidth: 0,
+    borderColor: "#ccc",
     gap: Spacing.one,
   },
 });

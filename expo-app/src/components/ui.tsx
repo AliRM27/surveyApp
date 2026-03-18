@@ -197,6 +197,29 @@ export function SectionHeader({
   );
 }
 
+export function AddButton({
+  onPress,
+  style,
+}: {
+  onPress: () => void;
+  style?: ViewProps["style"];
+}) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: theme.backgroundElement },
+        pressed && styles.buttonPressedAdd,
+        style,
+      ]}
+      onPress={onPress}
+    >
+      <ThemedText type="subtitle">+</ThemedText>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   surface: {
     borderRadius: Spacing.three,
@@ -266,5 +289,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  button: {
+    width: 60,
+    height: 60,
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 100,
+    right: Spacing.four,
+    bottom: 100,
+    borderWidth: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  buttonPressedAdd: {
+    transform: [{ translateY: 1 }],
+    shadowOpacity: 0.1,
+    elevation: 0,
   },
 });

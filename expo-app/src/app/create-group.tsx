@@ -32,8 +32,7 @@ const createGroup = () => {
     return groupCode;
   };
 
-  const randomColor = () =>
-    palette[Math.floor(Math.random() * palette.length)];
+  const randomColor = () => palette[Math.floor(Math.random() * palette.length)];
 
   const handleCreateGroup = async () => {
     if (!user) return;
@@ -88,18 +87,19 @@ const createGroup = () => {
               {error}
             </ThemedText>
           )}
-
-          <PrimaryButton
-            label={creating ? "Creating…" : "Create group"}
-            onPress={handleCreateGroup}
-            fullWidth
-            isActive={groupName.trim().length > 0 && !creating}
-          />
-          <SecondaryButton
-            label="Cancel"
-            onPress={() => router.back()}
-            fullWidth
-          />
+          <View>
+            <PrimaryButton
+              label={creating ? "Creating…" : "Create group"}
+              onPress={handleCreateGroup}
+              fullWidth
+              isActive={groupName.trim().length > 0 && !creating}
+            />
+            <SecondaryButton
+              label="Cancel"
+              onPress={() => router.back()}
+              fullWidth
+            />
+          </View>
         </View>
       </SafeAreaView>
     </ThemedView>
@@ -119,6 +119,6 @@ const styles = StyleSheet.create({
     gap: Spacing.four,
   },
   form: {
-    gap: Spacing.three,
+    gap: Spacing.five,
   },
 });

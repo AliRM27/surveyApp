@@ -61,17 +61,19 @@ export default function JoinGroupScreen() {
               {error}
             </ThemedText>
           )}
-          <PrimaryButton
-            label={joining ? "Joining…" : "Join group"}
-            onPress={handleJoinGroup}
-            fullWidth
-            disabled={!groupCode.trim() || joining}
-          />
-          <SecondaryButton
-            label="Cancel"
-            onPress={() => router.back()}
-            fullWidth
-          />
+          <View>
+            <PrimaryButton
+              label={joining ? "Joining…" : "Join group"}
+              onPress={handleJoinGroup}
+              fullWidth
+              disabled={!groupCode.trim() || joining}
+            />
+            <SecondaryButton
+              label="Cancel"
+              onPress={() => router.back()}
+              fullWidth
+            />
+          </View>
         </View>
       </SafeAreaView>
     </ThemedView>
@@ -89,6 +91,6 @@ const styles = StyleSheet.create({
     gap: Spacing.four,
   },
   form: {
-    gap: Spacing.two,
+    gap: Spacing.five,
   },
 });
