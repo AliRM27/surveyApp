@@ -15,6 +15,7 @@ export default function GroupOverviewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [group, setGroup] = useState<Group | null>(null);
+  const [surveys, setSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
@@ -25,8 +26,12 @@ export default function GroupOverviewScreen() {
       setLoading(true);
       setError(null);
       try {
-        const data = await api.get<Group>(`/groups/${id}`);
-        setGroup(data);
+        const [groupData, surveysData] = await Promise.all([
+          api.get<Group>(`/groups/${id}`),
+          api.get<any[]>(`/surveys/group/${id}`)
+        ]);
+        setGroup(groupData);
+        setSurveys(surveysData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load group");
       } finally {
@@ -57,6 +62,9 @@ export default function GroupOverviewScreen() {
 
   if (!group || !user) return null;
 
+  const teacherId = typeof group.teacher === "string" ? group.teacher : group.teacher?._id;
+  const isTeacher = teacherId === user._id;
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -78,17 +86,40 @@ export default function GroupOverviewScreen() {
           )}
         </ThemedView>
 
-        <AddButton onPress={() => router.push("/create-survey")} />
+        {isTeacher && (
+           <AddButton onPress={() => router.push({ pathname: "/create-survey", params: { groupId: id } })} />
+        )}
 
-        {/* <ThemedView
-          style={[styles.card, { backgroundColor: group.color ?? "#ffffff" }]}
-        >
-          <ThemedText type="subtitle">About this group</ThemedText>
-          <ThemedText themeColor="textSecondary">
-            Share the code with students so they can join. You can manage
-            members from the Members tab.
-          </ThemedText>
-        </ThemedView> */}
+        <View style={styles.surveysSection}>
+          <ThemedText type="subtitle">Active Surveys</ThemedText>
+          {surveys.length === 0 ? (
+            <ThemedText themeColor="textSecondary">No surveys available.</ThemedText>
+          ) : (
+            surveys.map((survey) => (
+              <Pressable
+                key={survey._id}
+                style={styles.surveyCard}
+                onPress={() => {
+                  if (isTeacher) {
+                    router.push({ pathname: "/survey/[id]/results" as any, params: { id: survey._id } });
+                  } else {
+                    router.push({ pathname: "/survey/[id]" as any, params: { id: survey._id } });
+                  }
+                }}
+              >
+                <View>
+                  <ThemedText type="default" style={{ fontWeight: "600" }}>{survey.title}</ThemedText>
+                  <ThemedText themeColor="textSecondary">
+                    {survey.questions?.length || 0} Questions
+                  </ThemedText>
+                </View>
+                <ThemedText type="link" style={{ fontWeight: "bold" }}>
+                  {isTeacher ? "Results" : "Start"}
+                </ThemedText>
+              </Pressable>
+            ))
+          )}
+        </View>
       </SafeAreaView>
     </ThemedView>
   );
@@ -113,5 +144,19 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderColor: "#ccc",
     gap: Spacing.one,
+  },
+  surveysSection: {
+    marginTop: Spacing.two,
+    gap: Spacing.two,
+  },
+  surveyCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "#e5e7eb",
+    backgroundColor: "#ffffff",
   },
 });

@@ -12,7 +12,7 @@ const router = Router();
 
 const baseQuestion = z.object({
   prompt: z.string().min(1),
-  type: z.enum(['multiple_choice', 'scale', 'text'])
+  type: z.enum(['multiple_choice', 'scale', 'text', 'yes_no'])
 });
 
 const multipleChoiceQuestion = baseQuestion.extend({
@@ -37,10 +37,15 @@ const textQuestion = baseQuestion.extend({
   type: z.literal('text')
 });
 
+const yesNoQuestion = baseQuestion.extend({
+  type: z.literal('yes_no')
+});
+
 const questionSchema = z.discriminatedUnion('type', [
   multipleChoiceQuestion,
   scaleQuestion,
-  textQuestion
+  textQuestion,
+  yesNoQuestion
 ]);
 
 const createSurveySchema = z.object({

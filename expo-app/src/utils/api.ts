@@ -52,4 +52,5 @@ export const api = {
   get: request,
   post: <T>(path: string, json: unknown) =>
     request<T>(path, { method: "POST", json }),
+  delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 };

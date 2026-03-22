@@ -75,7 +75,7 @@ export const getSurveyResults = asyncHandler(
         .flatMap((resp) => resp.answers)
         .filter((ans) => ans.questionId.toString() === question._id.toString());
 
-      if (question.type === 'multiple_choice') {
+      if (question.type === 'multiple_choice' || question.type === 'yes_no') {
         const counts: Record<string, number> = {};
         answersForQuestion.forEach((ans) => {
           const values = Array.isArray(ans.value) ? ans.value : [ans.value];

@@ -141,3 +141,20 @@ export const joinGroupByCode = asyncHandler(
     res.json(group);
   },
 );
+
+export const removeMember = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id, memberId } = req.params;
+
+    const group = await GroupModel.findById(id);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found." });
+    }
+
+    // Remove the member from the members array
+    group.members = group.members.filter((m) => m.toString() !== memberId);
+    await group.save();
+
+    res.json(group);
+  },
+);

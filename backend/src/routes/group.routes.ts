@@ -6,6 +6,7 @@ import {
   getGroup,
   joinGroupByCode,
   listGroups,
+  removeMember,
 } from "../controllers/group.controller";
 import { validateRequest } from "../middlewares/validateRequest";
 
@@ -28,6 +29,10 @@ const joinByCodeSchema = z.object({
   groupCode: z.string().min(1),
   memberId: z.string().min(1),
 });
+const removeMemberParamsSchema = z.object({
+  id: z.string().min(1),
+  memberId: z.string().min(1),
+});
 
 router.post("/", validateRequest(createGroupSchema), createGroup);
 router.get("/", listGroups);
@@ -39,5 +44,10 @@ router.post(
   addMember,
 );
 router.post("/join", validateRequest(joinByCodeSchema), joinGroupByCode);
+router.delete(
+  "/:id/members/:memberId",
+  validateRequest(removeMemberParamsSchema, "params"),
+  removeMember,
+);
 
 export default router;
