@@ -6,13 +6,27 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
+import { PieChart } from "react-native-chart-kit";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Spacing } from "@/constants/theme";
 import { api } from "@/utils/api";
+
+const screenWidth = Dimensions.get("window").width;
+const CHART_COLORS = [
+  "#3b82f6", // blue
+  "#ef4444", // red
+  "#10b981", // green
+  "#f59e0b", // yellow/orange
+  "#8b5cf6", // purple
+  "#ec4899", // pink
+  "#14b8a6", // teal
+  "#f43f5e", // rose
+];
 
 export default function SurveyResultsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -82,20 +96,50 @@ export default function SurveyResultsScreen() {
 
                 {(q.type === "multiple_choice" || q.type === "yes_no") && (
                   <View style={styles.metricsContainer}>
-                    {Object.entries(q.summary.counts || {}).map(
-                      ([option, count]) => (
-                        <View key={option} style={styles.metricRow}>
-                          <ThemedText style={{ flex: 1 }}>{option}</ThemedText>
-                          <ThemedText style={{ width: 40, textAlign: "right" }}>
-                            {String(count)}
-                          </ThemedText>
-                        </View>
-                      ),
-                    )}
-                    {Object.keys(q.summary.counts || {}).length === 0 && (
+                    {Object.keys(q.summary.counts || {}).length === 0 ? (
                       <ThemedText themeColor="textSecondary">
                         No options selected yet.
                       </ThemedText>
+                    ) : q.resultDisplayType === "pie" ? (
+                      <PieChart
+                        data={Object.entries(q.summary.counts || {}).map(([name, count], idx) => ({
+                          name,
+                          count: Number(count),
+                          color: CHART_COLORS[idx % CHART_COLORS.length],
+                          legendFontColor: "#374151",
+                          legendFontSize: 12,
+                        }))}
+                        width={screenWidth - Spacing.four * 2 - Spacing.three * 2}
+                        height={180}
+                        chartConfig={{
+                          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                        }}
+                        accessor={"count"}
+                        backgroundColor={"transparent"}
+                        paddingLeft={"15"}
+                        center={[0, 0]}
+                        absolute
+                      />
+                    ) : (
+                      Object.entries(q.summary.counts || {}).map(([option, count], idx) => {
+                        const countValues: number[] = Object.values(q.summary.counts || {}).map(v => Number(v));
+                        const total = countValues.reduce((sum: number, v: number) => sum + v, 0);
+                        const percentage = total > 0 ? (Number(count) / total) * 100 : 0;
+                        const barColor = CHART_COLORS[idx % CHART_COLORS.length];
+                        return (
+                          <View key={option} style={styles.barContainer}>
+                            <View style={styles.barLabelRow}>
+                              <ThemedText style={{ flex: 1, fontSize: 13, color: "#4b5563" }}>{option}</ThemedText>
+                              <ThemedText style={{ width: 80, textAlign: "right", fontSize: 13, fontWeight: "600", color: "#1f2937" }}>
+                                {String(count)} ({percentage.toFixed(0)}%)
+                              </ThemedText>
+                            </View>
+                            <View style={styles.barBackground}>
+                              <View style={[styles.barFill, { width: `${percentage}%`, backgroundColor: barColor }]} />
+                            </View>
+                          </View>
+                        );
+                      })
                     )}
                   </View>
                 )}
@@ -249,5 +293,23 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     marginTop: Spacing.four,
+  },
+  barContainer: {
+    marginBottom: Spacing.two,
+  },
+  barLabelRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: Spacing.half,
+  },
+  barBackground: {
+    height: 12,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 6,
+    overflow: "hidden",
+  },
+  barFill: {
+    height: "100%",
+    borderRadius: 6,
   },
 });

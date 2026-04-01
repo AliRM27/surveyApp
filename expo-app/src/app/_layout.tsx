@@ -22,7 +22,7 @@ function AuthGate() {
   const { isAuthenticated, hydrated } = useAuth();
 
   useEffect(() => {
-    const ready = navigationState?.key != null;
+    const ready = !!navigationState?.key;
     if (!ready || !hydrated) return;
 
     const inAuthGroup = segments[0] === "auth";

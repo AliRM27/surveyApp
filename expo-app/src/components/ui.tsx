@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   input: {
     fontSize: 16,
     fontWeight: "500",
-    height: 30,
+    height: 40,
   },
   pill: {
     paddingHorizontal: Spacing.two,

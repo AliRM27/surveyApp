@@ -8,6 +8,7 @@ export interface Question {
   _id: Types.ObjectId;
   prompt: string;
   type: QuestionType;
+  resultDisplayType?: 'bar' | 'pie';
   options?: string[];
   scale?: {
     min: number;
@@ -33,6 +34,10 @@ const questionSchema = new Schema<Question>(
       type: String,
       enum: ['multiple_choice', 'scale', 'text', 'yes_no'],
       required: true
+    },
+    resultDisplayType: {
+      type: String,
+      enum: ['bar', 'pie']
     },
     options: [{ type: String }],
     scale: {

@@ -23,6 +23,7 @@ type QuestionType = "multiple_choice" | "scale" | "text" | "yes_no";
 interface Question {
   prompt: string;
   type: QuestionType;
+  resultDisplayType?: "bar" | "pie";
   options: string[];
   scale: { min: number; max: number; step: number };
 }
@@ -43,6 +44,7 @@ export default function CreateSurveyScreen() {
       {
         prompt: "",
         type: "text",
+        resultDisplayType: "bar",
         options: [""],
         scale: { min: 1, max: 5, step: 1 },
       },
@@ -125,10 +127,22 @@ export default function CreateSurveyScreen() {
         anonymous,
         questions: questions.map((q) => {
           if (q.type === "multiple_choice") {
-            return { prompt: q.prompt, type: q.type, options: q.options };
+            return {
+              prompt: q.prompt,
+              type: q.type,
+              options: q.options,
+              resultDisplayType: q.resultDisplayType,
+            };
           }
           if (q.type === "scale") {
             return { prompt: q.prompt, type: q.type, scale: q.scale };
+          }
+          if (q.type === "yes_no") {
+            return {
+              prompt: q.prompt,
+              type: q.type,
+              resultDisplayType: q.resultDisplayType,
+            };
           }
           return { prompt: q.prompt, type: q.type };
         }),
@@ -238,12 +252,47 @@ export default function CreateSurveyScreen() {
                       {t === "multiple_choice"
                         ? "Choice"
                         : t === "yes_no"
-                        ? "Yes/No"
-                        : t.charAt(0).toUpperCase() + t.slice(1)}
+                          ? "Yes/No"
+                          : t.charAt(0).toUpperCase() + t.slice(1)}
                     </ThemedText>
                   </TouchableOpacity>
                 ))}
               </View>
+
+              {(q.type === "multiple_choice" || q.type === "yes_no") && (
+                <View style={styles.chartTypeRow}>
+                  <ThemedText style={styles.chartTypeLabel}>
+                    Result Display:
+                  </ThemedText>
+                  <View style={styles.typeRow}>
+                    {["bar", "pie"].map((t) => (
+                      <TouchableOpacity
+                        key={t}
+                        style={[
+                          styles.typeBtn,
+                          (q.resultDisplayType || "bar") === t &&
+                            styles.typeBtnActive,
+                        ]}
+                        onPress={() =>
+                          updateQuestion(qIndex, {
+                            resultDisplayType: t as "bar" | "pie",
+                          })
+                        }
+                      >
+                        <ThemedText
+                          style={[
+                            styles.typeBtnText,
+                            (q.resultDisplayType || "bar") === t &&
+                              styles.typeBtnTextActive,
+                          ]}
+                        >
+                          {t === "bar" ? "Bar Chart" : "Pie Chart"}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
 
               {q.type === "multiple_choice" && (
                 <View style={styles.optionsContainer}>
@@ -441,5 +490,13 @@ const styles = StyleSheet.create({
   },
   scaleInput: {
     textAlign: "center",
+  },
+  chartTypeRow: {
+    marginTop: Spacing.two,
+  },
+  chartTypeLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: Spacing.half,
   },
 });

@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.alirm.expoapp"
+      "bundleIdentifier": "com.alirm.expoapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -47,6 +50,7 @@
       "eas": {
         "projectId": "c03c6b00-14c8-4271-9a24-8a431f2a942e"
       }
-    }
+    },
+    "owner": "alirm"
   }
 }

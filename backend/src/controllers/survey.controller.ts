@@ -1,48 +1,56 @@
-import { Request, Response } from 'express';
-import { GroupModel } from '../models/group.model';
-import { SurveyModel } from '../models/survey.model';
-import { ResponseModel } from '../models/response.model';
-import { UserModel } from '../models/user.model';
-import { asyncHandler } from '../utils/asyncHandler';
+import { Request, Response } from "express";
+import { GroupModel } from "../models/group.model";
+import { SurveyModel } from "../models/survey.model";
+import { ResponseModel } from "../models/response.model";
+import { UserModel } from "../models/user.model";
+import { asyncHandler } from "../utils/asyncHandler";
 
-export const createSurvey = asyncHandler(async (req: Request, res: Response) => {
-  const { title, groupId, createdBy, anonymous = false, questions } = req.body;
+export const createSurvey = asyncHandler(
+  async (req: Request, res: Response) => {
+    const {
+      title,
+      groupId,
+      createdBy,
+      anonymous = false,
+      questions,
+    } = req.body;
 
-  const [group, creator] = await Promise.all([
-    GroupModel.findById(groupId),
-    UserModel.findById(createdBy)
-  ]);
+    const [group, creator] = await Promise.all([
+      GroupModel.findById(groupId),
+      UserModel.findById(createdBy),
+    ]);
 
-  if (!group) {
-    return res.status(400).json({ message: 'Group not found.' });
-  }
+    if (!group) {
+      return res.status(400).json({ message: "Group not found." });
+    }
 
-  if (!creator || creator.role !== 'teacher') {
-    return res
-      .status(400)
-      .json({ message: 'Creator must be an existing teacher.' });
-  }
+    if (!creator || creator.role !== "teacher") {
+      return res
+        .status(400)
+        .json({ message: "Creator must be an existing teacher." });
+    }
 
-  const survey = await SurveyModel.create({
-    title,
-    group: groupId,
-    createdBy,
-    anonymous,
-    questions
-  });
+    const survey = await SurveyModel.create({
+      title,
+      group: groupId,
+      createdBy,
+      anonymous,
+      questions,
+    });
 
-  res.status(201).json(survey);
-});
+    res.status(201).json(survey);
+  },
+);
 
 export const getSurvey = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const survey = await SurveyModel.findById(id)
-    .populate('group', 'name')
-    .populate('createdBy', 'name email role')
+    .populate("group", "name")
+    .populate("createdBy", "name email role")
     .lean();
 
   if (!survey) {
-    return res.status(404).json({ message: 'Survey not found.' });
+    return res.status(404).json({ message: "Survey not found." });
   }
 
   res.json(survey);
@@ -55,7 +63,7 @@ export const listSurveysByGroup = asyncHandler(
       .sort({ createdAt: -1 })
       .lean();
     res.json(surveys);
-  }
+  },
 );
 
 export const getSurveyResults = asyncHandler(
@@ -64,7 +72,7 @@ export const getSurveyResults = asyncHandler(
     const survey = await SurveyModel.findById(id).lean();
 
     if (!survey) {
-      return res.status(404).json({ message: 'Survey not found.' });
+      return res.status(404).json({ message: "Survey not found." });
     }
 
     const responses = await ResponseModel.find({ survey: id }).lean();
@@ -75,20 +83,27 @@ export const getSurveyResults = asyncHandler(
         .flatMap((resp) => resp.answers)
         .filter((ans) => ans.questionId.toString() === question._id.toString());
 
-      if (question.type === 'multiple_choice' || question.type === 'yes_no') {
+      if (question.type === "multiple_choice" || question.type === "yes_no") {
         const counts: Record<string, number> = {};
         answersForQuestion.forEach((ans) => {
           const values = Array.isArray(ans.value) ? ans.value : [ans.value];
           values.forEach((v) => {
-            if (typeof v === 'string') {
+            if (typeof v === "string") {
               counts[v] = (counts[v] || 0) + 1;
             }
           });
         });
-        return { questionId: question._id, prompt: question.prompt, type: question.type, summary: { counts } };
+
+        return {
+          questionId: question._id,
+          prompt: question.prompt,
+          type: question.type,
+          resultDisplayType: (question as any).resultDisplayType,
+          summary: { counts },
+        };
       }
 
-      if (question.type === 'scale') {
+      if (question.type === "scale") {
         const numeric = answersForQuestion
           .map((ans) => Number(ans.value))
           .filter((v) => !Number.isNaN(v));
@@ -105,28 +120,28 @@ export const getSurveyResults = asyncHandler(
           summary: {
             average,
             min: numeric.length ? Math.min(...numeric) : null,
-            max: numeric.length ? Math.max(...numeric) : null
-          }
+            max: numeric.length ? Math.max(...numeric) : null,
+          },
         };
       }
 
       // text question
       const textAnswers = answersForQuestion
         .map((ans) => ans.value)
-        .filter((v): v is string => typeof v === 'string');
+        .filter((v): v is string => typeof v === "string");
 
       return {
         questionId: question._id,
         prompt: question.prompt,
         type: question.type,
-        summary: { responses: textAnswers }
+        summary: { responses: textAnswers },
       };
     });
 
     res.json({
       surveyId: id,
       totalResponses,
-      questions: questionSummaries
+      questions: questionSummaries,
     });
-  }
+  },
 );

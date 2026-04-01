@@ -12,7 +12,8 @@ const router = Router();
 
 const baseQuestion = z.object({
   prompt: z.string().min(1),
-  type: z.enum(['multiple_choice', 'scale', 'text', 'yes_no'])
+  type: z.enum(['multiple_choice', 'scale', 'text', 'yes_no']),
+  resultDisplayType: z.enum(['bar', 'pie']).optional()
 });
 
 const multipleChoiceQuestion = baseQuestion.extend({
